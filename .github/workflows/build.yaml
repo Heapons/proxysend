@@ -56,8 +56,9 @@ jobs:
           check-latest: true
           python-version: '>=3'
       - name: setup ambuild
+        shell: cmd
+        run: py -m pip install --upgrade pip setuptools wheel
         working-directory: ambuild
-        run: python setup.py install
       - name: clone ext
         uses: actions/checkout@main
         with:
