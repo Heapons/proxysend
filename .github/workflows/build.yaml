@@ -1,9 +1,9 @@
 name: build
 on:
   push:
-    paths-ignore: [LICENSE, README.md]
+    paths-ignore: []
   pull_request:
-    paths-ignore: [LICENSE, README.md]
+    paths-ignore: []
 jobs:
   build:
     name: ${{matrix.os}}-${{matrix.game}}-sm${{matrix.sm}}
