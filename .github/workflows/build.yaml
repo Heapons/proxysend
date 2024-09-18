@@ -5,14 +5,42 @@ on:
   pull_request:
     paths-ignore: [LICENSE, README.md]
 jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Get short SHA
+        id: vars
+        run: |
+          echo "GITHUB_SHA_SHORT=${GITHUB_SHA::7}" >> $GITHUB_ENV
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: r${{ github.run_number }}-${{ github.ref_name }}
+          release_name: Build ${{ env.GITHUB_SHA_SHORT }}
+          draft: false
+          prerelease: true
+
   build:
     name: ${{matrix.os}}-${{matrix.game}}-sm${{matrix.sm}}
+    needs: create_release
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         game: [tf2]
         sm: ['1.11']
+        include:
+          - os: ubuntu-20.04
+            os_short: linux
+            package_ext: .tar.gz
+            branch: 1.11-dev
     steps:
       - name: setup env
         shell: bash
@@ -45,19 +73,14 @@ jobs:
           repository: alliedmodders/metamod-source
           ref: ${{matrix.branch}}
           path: metamod-${{matrix.sm}}
-      - name: clone ambuild
-        uses: actions/checkout@main
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          repository: alliedmodders/ambuild
-          path: ambuild
-      - name: setup python
-        uses: actions/setup-python@main
-        with:
-          check-latest: true
-          python-version: '>=3'
-      - name: setup ambuild
-        working-directory: ambuild
-        run: python setup.py install
+          python-version: '3.x'
+      - name: Checkout ambuild
+        run: |
+          python -m pip install wheel
+          pip install git+https://github.com/alliedmodders/ambuild
       - name: clone ext
         uses: actions/checkout@main
         with:
@@ -69,8 +92,23 @@ jobs:
           cd build
           python ../configure.py --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
           ambuild
-      - name: upload ext
-        uses: actions/upload-artifact@main
+
+      - name: Build Package (Linux)
+        if: runner.os == 'Linux'
+        working-directory: extenson/build
+        shell: bash
+        run: |
+          pushd package
+          tar -czf "../package.${{ matrix.package_ext }}" --owner=0 --group=0 addons
+          popd
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{matrix.os}}-${{matrix.game}}-sm${{matrix.sm}}-${{env.GITHUB_SHA_SHORT}}
-          path: extenson/build/package
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: extenson/build/package.${{ matrix.package_ext }}
+          asset_name: package.${{ matrix.package_ext }}
+          asset_content_type: application/octet-stream
