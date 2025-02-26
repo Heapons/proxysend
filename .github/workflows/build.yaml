@@ -1,4 +1,4 @@
-name: build extension
+name: build
 on:
   push:
     paths-ignore: [LICENSE, README.md]
@@ -55,6 +55,9 @@ jobs:
         with:
           check-latest: true
           python-version: '>=3'
+      - name: setup setuptools
+        working-directory: ambuild
+        run: pip install setuptools
       - name: setup ambuild
         working-directory: ambuild
         run: python setup.py install
