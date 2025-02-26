@@ -70,7 +70,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          ./configure.py --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
+          ../configure.py --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
           ambuild
       - name: upload ext
         uses: actions/upload-artifact@main
