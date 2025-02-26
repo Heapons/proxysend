@@ -65,13 +65,24 @@ jobs:
         uses: actions/checkout@main
         with:
           path: extenson
-      - name: build ext
-        working-directory: extenson
+      #- name: build ext
+      #  working-directory: extenson
+      #  run: |
+      #    mkdir build
+      #    cd build
+      #    python ../configure.py --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
+      #    ambuild
+      - name: Build submodules
         run: |
-          mkdir build
-          cd build
-          python ../configure.py --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
-          ambuild
+          pushd libs/udis86
+          ./autogen.sh
+          ./configure --enable-optimize --sm-path="${{github.workspace}}/sourcemod-${{matrix.sm}}" --mms-path="${{github.workspace}}/metamod-${{matrix.sm}}" --sdks=${{matrix.game}}
+          make CFLAGS="-m32" LDFLAGS="-m32"
+          mv libudis86/.libs/libudis86.a ../libudis86.a
+          make clean
+          make CFLAGS="-fPIC"
+          mv libudis86/.libs/libudis86.a ../libudis86x64.a
+          popd
       - name: upload ext
         uses: actions/upload-artifact@main
         with:
