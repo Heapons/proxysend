@@ -1,4 +1,4 @@
-name: build
+name: build extension
 on:
   push:
     paths-ignore: [LICENSE, README.md]
