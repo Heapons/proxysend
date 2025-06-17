@@ -19,5 +19,7 @@ builder.options.add_option('--enable-optimize', action='store_const', const='1',
 builder.options.add_option('-s', '--sdks', default='all', dest='sdks',
                        help='Build against specified SDKs; valid args are "all", "present", or '
                             'comma-delimited list of engine names (default: %default)')
+builder.options.add_option('--targets', type=str, dest='targets', default='x86_64',
+                       help='Build targets (default: x86_64)')
 
 builder.Configure()
