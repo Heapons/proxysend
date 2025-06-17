@@ -13,6 +13,7 @@ jobs:
         os: [ubuntu-latest]
         game: [tf2]
         sm: ['1.11']
+        branch: ['1.11-dev']
     steps:
       - name: setup env
         shell: bash
