@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@main
         with:
           repository: alliedmodders/sourcemod
-          ref: ${{matrix.branch}}
+          ref: 1.11-dev
           path: sourcemod-${{matrix.sm}}
           submodules: recursive
       - name: patch udis86.c for clang memset error
@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@main
         with:
           repository: alliedmodders/metamod-source
-          ref: ${{matrix.branch}}
+          ref: 1.11-dev
           path: metamod-${{matrix.sm}}
       - name: clone ambuild
         uses: actions/checkout@main
