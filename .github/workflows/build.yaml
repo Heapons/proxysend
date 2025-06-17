@@ -13,7 +13,6 @@ jobs:
         os: [ubuntu-latest]
         game: [tf2]
         sm: ['1.11']
-        branch: ['1.11-dev']
     steps:
       - name: setup env
         shell: bash
@@ -40,6 +39,12 @@ jobs:
           ref: ${{matrix.branch}}
           path: sourcemod-${{matrix.sm}}
           submodules: recursive
+      - name: patch udis86.c for clang memset error
+        run: |
+          UD_PATH="sourcemod-${{matrix.sm}}/public/libudis86/udis86.c"
+          if ! grep -q '#include <string.h>' "$UD_PATH"; then
+            sed -i '1i#include <string.h>' "$UD_PATH"
+          fi
       - name: clone metamod
         uses: actions/checkout@main
         with:
